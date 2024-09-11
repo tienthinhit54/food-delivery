@@ -1,7 +1,9 @@
 import React, {  useState } from 'react'
 import './Add.css'
 import { assets } from '../../assets/assets'
-const Add = () => {
+import axios from 'axios'
+import { toast } from 'react-toastify'
+const Add = ({url}) => {
     const [image,setImage]=useState(false);
     const[data,setData]=useState({
         name:"",
@@ -15,18 +17,32 @@ const Add = () => {
         setData(data =>({...data,[name]:value}))
     }
     const onSumbitHandler = async(event)=>{
-        event.prevenDefault();
+        event.preventDefault();
         const formData= new FormData();
         formData.append("name",data.name)
         formData.append("desciption",data.description)
         formData.append("price",Number(data.price))
         formData.append("category",data.category)
         formData.append("image",image)
+        const response = await axios.post(`${url}/api/food/add`,formData)
+        if(response.data.success){
+            setData({
+                name:"",
+                description:"",
+                price:"",
+                category:"Salad"    
+            })
+            setImage(false)
+            toast.success(response.data.message)
+        }
+        else{
+            toast.error(response.data.message)
+        }
     }
    
   return (
     <div className='add'>
-      <form className='flex-col'>
+      <form className='flex-col' onSubmit={onSumbitHandler}>
         <div className="add-img-upload flex-col">
             <p>Upload Image</p>
             <label htmlFor="image">
@@ -45,7 +61,7 @@ const Add = () => {
         <div className="add-category-price">
             <div className="ad-category flex-col">
                 <p>Product category</p>
-                <select name="category" >
+                <select onChange={onChangeHandle}  name="category" >
                     <option value="Salad">Salad</option>
                     <option value="Rolls">Rolls</option>
                     <option value="Deserts">Deserts</option>
